@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 账本背景 -->
+    <path
+        android:fillColor="#4F46E5"
+        android:pathData="M0,0h108v108h-108z" />
+    
+    <!-- 账本页面 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M20,20h68v68h-68z" />
+    
+    <!-- 账本线条 -->
+    <path
+        android:strokeColor="#E2E8F0"
+        android:strokeWidth="1"
+        android:pathData="M25,30h58" />
+    <path
+        android:strokeColor="#E2E8F0"
+        android:strokeWidth="1"
+        android:pathData="M25,40h58" />
+    <path
+        android:strokeColor="#E2E8F0"
+        android:strokeWidth="1"
+        android:pathData="M25,50h58" />
+    <path
+        android:strokeColor="#E2E8F0"
+        android:strokeWidth="1"
+        android:pathData="M25,60h58" />
+    <path
+        android:strokeColor="#E2E8F0"
+        android:strokeWidth="1"
+        android:pathData="M25,70h58" />
+    
+    <!-- 账本标题 -->
+    <path
+        android:fillColor="#4F46E5"
+        android:pathData="M30,25h48v4h-48z" />
+    
+    <!-- 货币符号 -->
+    <path
+        android:fillColor="#059669"
+        android:pathData="M40,80h4v8h-4z" />
+    <path
+        android:fillColor="#059669"
+        android:pathData="M42,80h2v8h-2z" />
+    <path
+        android:fillColor="#059669"
+        android:pathData="M44,80h4v8h-4z" />
+</vector>
