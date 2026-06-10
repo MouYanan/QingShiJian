@@ -25,13 +25,6 @@
 - minSdk 26 / targetSdk 36
 - Kotlin + Compose
 
-## 构建与运行
-
-1. 克隆仓库
-2. 用 Android Studio 打开项目
-3. 同步 Gradle
-4. 运行到设备或模拟器
-
 ## 许可证
 
 MIT License
