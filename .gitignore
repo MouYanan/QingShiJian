@@ -1,0 +1,36 @@
+# Built application files
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Java/Kotlin build files
+*.class
+
+# Gradle files
+.gradle/
+build/
+app/build/
+
+# Local configuration
+local.properties
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Log files
+*.log
+
+# Temporary files
+1.txt
+
+# Keystore
+*.jks
+*.keystore

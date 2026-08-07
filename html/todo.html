@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="renderer" content="webkit">
+    <meta name="wap-font-scale" content="no">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="时笺">
+    <title>时笺 - 待办事项</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-container">
+            <a href="index.html" class="logo">时笺</a>
+        </div>
+    </nav>
+
+    <div class="container" style="padding-top: 80px; padding-bottom: 100px;">
+        <div class="page-header">
+            <h1>待办事项</h1>
+            <p>管理您的任务和提醒</p>
+        </div>
+        
+        <div id="todosList">
+            <div class="empty-state">
+                <i class="fas fa-tasks"></i>
+                <p>暂无待办事项</p>
+                <p class="text-sm">点击右下角+按钮创建新待办</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="circle-container">
+        <div id="circleOptions"></div>
+        <div id="circleBtn" class="circle-btn">
+            <i class="fa fa-plus"></i>
+        </div>
+    </div>
+
+    <footer>
+        <nav class="bottom-box">
+            <a href="index.html">
+                <p class="fa fa-book"></p>
+                <p>账单</p>
+            </a>
+            <a href="todo.html" class="active">
+                <p class="fa fa-list"></p>
+                <p>待办事项</p>
+            </a>
+            <a href="note.html">
+                <p class="fa fa-pencil"></p>
+                <p>笔记</p>
+            </a>
+            <a href="birthday.html">
+                <p class="fa fa-birthday-cake"></p>
+                <p>生日管家</p>
+            </a>
+            <a href="settings.html">
+                <p class="fa fa-gear"></p>
+                <p>设置</p>
+            </a>
+        </nav>
+    </footer>
+
+    <div class="success-message" id="successMessage">保存成功！</div>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            setActiveNavItem('todo');
+            loadTodos();
+            initCircleButton([
+                { text: '新建待办事项', icon: 'fas fa-plus', color: 'blue', action: () => navigateTo('new-todo.html') }
+            ]);
+        });
+
+        function loadTodos() {
+            const todos = getTodos();
+            const container = document.getElementById('todosList');
+            
+            if (todos.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-tasks"></i>
+                        <p>暂无待办事项</p>
+                        <p class="text-sm">点击右下角+按钮创建新待办</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const sortedTodos = sortByDate(todos, 'createdAt', true);
+            
+            let html = '';
+            sortedTodos.forEach((todo, index) => {
+                const priorityClass = `priority-${todo.priority}`;
+                html += `
+                    <div class="todo-item">
+                        <div onclick="navigateTo('todo-detail.html?id=${index}')">
+                            <div class="todo-title">${todo.title}</div>
+                            <div class="todo-date">截止日期: ${formatDate(todo.dueDate)}</div>
+                            <div>
+                                <span class="todo-priority ${priorityClass}">${getPriorityText(todo.priority)}</span>
+                            </div>
+                        </div>
+                        <button class="delete-btn" onclick="deleteTodo(${index}); event.stopPropagation();">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function deleteTodo(index) {
+            if (confirm('确定要删除这条待办事项吗？')) {
+                const todos = getTodos();
+                const sortedTodos = sortByDate(todos, 'createdAt', true);
+                // 找到原始数组中的索引
+                const originalIndex = todos.findIndex(t => t.createdAt === sortedTodos[index].createdAt);
+                if (originalIndex !== -1) {
+                    todos.splice(originalIndex, 1);
+                    saveTodos(todos);
+                    showSuccessMessage();
+                    setTimeout(() => {
+                        loadTodos();
+                    }, 1000);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>时笺 - 修改笔记</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-container">
+            <a href="index.html" class="logo">时笺</a>
+        </div>
+    </nav>
+
+    <div class="container" style="padding-top: 80px; padding-bottom: 100px;">
+        <div class="page-header">
+            <h1>修改笔记</h1>
+            <p>编辑您的笔记信息</p>
+        </div>
+        
+        <div class="form-container">
+            <div class="form-header">
+                <h1>修改笔记</h1>
+                <p>编辑笔记内容</p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">笔记标题 *</label>
+                <input type="text" id="noteTitle" class="form-input" placeholder="例如：会议记录">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">笔记内容 *</label>
+                <textarea id="noteContent" class="form-input" rows="8" placeholder="请输入笔记内容..."></textarea>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goBack()">取消</button>
+                <button class="btn btn-primary" onclick="saveEdit()">保存修改</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="success-message" id="successMessage">保存成功！</div>
+
+    <script src="js/app.js"></script>
+    <script>
+        let currentIndex = -1;
+        let currentNote = null;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            currentIndex = parseInt(getUrlParam('id'));
+            if (isNaN(currentIndex)) {
+                alert('无效的笔记ID');
+                navigateTo('note.html');
+                return;
+            }
+            
+            const notes = sortByDate(getNotes(), 'createdAt', true);
+            if (currentIndex >= notes.length) {
+                alert('笔记不存在');
+                navigateTo('note.html');
+                return;
+            }
+            
+            currentNote = notes[currentIndex];
+            loadNoteData();
+        });
+
+        function loadNoteData() {
+            document.getElementById('noteTitle').value = currentNote.title;
+            document.getElementById('noteContent').value = currentNote.content;
+        }
+
+        function goBack() {
+            navigateTo('note-detail.html?id=' + currentIndex);
+        }
+
+        function saveEdit() {
+            const title = document.getElementById('noteTitle').value.trim();
+            const content = document.getElementById('noteContent').value.trim();
+            
+            if (!title) {
+                alert('请输入笔记标题');
+                return;
+            }
+            
+            if (!content) {
+                alert('请输入笔记内容');
+                return;
+            }
+            
+            const notes = getNotes();
+            // 找到原始数组中对应的笔记（通过createdAt匹配）
+            const originalIndex = notes.findIndex(note => note.createdAt === currentNote.createdAt);
+            if (originalIndex !== -1) {
+                notes[originalIndex] = {
+                    title: title,
+                    content: content,
+                    createdAt: currentNote.createdAt
+                };
+                saveNotes(notes);
+                
+                showSuccessMessage();
+                
+                setTimeout(() => {
+                    navigateTo('note.html');
+                }, 1500);
+            } else {
+                alert('保存失败：未找到对应的笔记');
+            }
+        }
+    </script>
+</body>
+</html>

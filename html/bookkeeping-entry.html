@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>时笺 - 记账单</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-container">
+            <a href="index.html" class="logo">时笺</a>
+        </div>
+    </nav>
+
+    <div class="container" style="padding-top: 80px; padding-bottom: 100px;">
+        <div class="page-header">
+            <h1>时间账单</h1>
+            <p>记录您的日常支出</p>
+        </div>
+        
+        <div class="form-container">
+            <div class="form-header">
+                <h1>记账单</h1>
+                <p id="dateDisplay">所选日期</p>
+            </div>
+            
+            <div class="date-display">
+                <h3>所选日期</h3>
+                <p id="selectedDateDisplay">2024年1月1日</p>
+            </div>
+            
+            <table class="expense-table">
+                <thead>
+                    <tr>
+                        <th style="width: 60%;">项目</th>
+                        <th style="width: 35%;">金额</th>
+                        <th style="width: 5%;"></th>
+                    </tr>
+                </thead>
+                <tbody id="expenseTableBody">
+                    <tr>
+                        <td><input type="text" placeholder="例如：午餐" class="form-input"></td>
+                        <td><input type="number" placeholder="0.00" step="0.01" class="form-input" onchange="calculateTotal()"></td>
+                        <td><button class="btn btn-danger" onclick="removeRow(this)">×</button></td>
+                    </tr>
+                    <tr>
+                        <td><input type="text" placeholder="例如：交通" class="form-input"></td>
+                        <td><input type="number" placeholder="0.00" step="0.01" class="form-input" onchange="calculateTotal()"></td>
+                        <td><button class="btn btn-danger" onclick="removeRow(this)">×</button></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <button class="btn btn-secondary" style="width: 100%; margin-bottom: 16px;" onclick="addRow()">
+                <i class="fas fa-plus" style="margin-right: 6px;"></i>添加行
+            </button>
+            
+            <div class="total-section">
+                <span>总金额:</span>
+                <span id="totalAmount">¥0.00</span>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goBack()">返回</button>
+                <button class="btn btn-primary" onclick="saveData()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="success-message" id="successMessage">保存成功！</div>
+
+    <script src="js/app.js"></script>
+    <script>
+        let selectedDate = '';
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            selectedDate = getUrlParam('date') || new Date().toISOString().split('T')[0];
+            document.getElementById('selectedDateDisplay').textContent = formatDate(selectedDate);
+            calculateTotal();
+        });
+
+        function addRow() {
+            const tbody = document.getElementById('expenseTableBody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="text" placeholder="新项目" class="form-input"></td>
+                <td><input type="number" placeholder="0.00" step="0.01" class="form-input" onchange="calculateTotal()"></td>
+                <td><button class="btn btn-danger" onclick="removeRow(this)">×</button></td>
+            `;
+            tbody.appendChild(newRow);
+        }
+
+        function removeRow(button) {
+            const row = button.closest('tr');
+            const tbody = document.getElementById('expenseTableBody');
+            if (tbody.querySelectorAll('tr').length > 1) {
+                row.remove();
+                calculateTotal();
+            }
+        }
+
+        function calculateTotal() {
+            const inputs = document.querySelectorAll('#expenseTableBody input[type="number"]');
+            let total = 0;
+            inputs.forEach(input => {
+                total += parseFloat(input.value) || 0;
+            });
+            document.getElementById('totalAmount').textContent = formatCurrency(total);
+        }
+
+        function goBack() {
+            navigateTo('bookkeeping.html');
+        }
+
+        function saveData() {
+            const expenses = [];
+            const rows = document.querySelectorAll('#expenseTableBody tr');
+            
+            rows.forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                const itemInput = inputs[0];
+                const amountInput = inputs[1];
+                
+                if (itemInput.value.trim() && amountInput.value) {
+                    expenses.push({
+                        item: itemInput.value.trim(),
+                        amount: parseFloat(amountInput.value)
+                    });
+                }
+            });
+            
+            if (expenses.length === 0) {
+                alert('请至少填写一个支出项目');
+                return;
+            }
+            
+            const total = parseFloat(document.getElementById('totalAmount').textContent.replace('¥', ''));
+            
+            const bills = getBills();
+            bills.push({
+                type: 'time',
+                date: selectedDate,
+                expenses: expenses,
+                total: total,
+                createdAt: new Date().toISOString().split('T')[0]
+            });
+            saveBills(bills);
+            
+            showSuccessMessage();
+            
+            setTimeout(() => {
+                navigateTo('index.html');
+            }, 1500);
+        }
+    </script>
+</body>
+</html>

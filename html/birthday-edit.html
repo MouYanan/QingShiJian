@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>时笺 - 修改生日信息</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/lunar-javascript@1.7.7/dist/lunar.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-container">
+            <a href="index.html" class="logo">时笺</a>
+        </div>
+    </nav>
+
+    <div class="container" style="padding-top: 80px; padding-bottom: 100px;">
+        <div class="page-header">
+            <h1>修改生日信息</h1>
+            <p>更新生日相关信息</p>
+        </div>
+
+        <div class="form-container">
+            <div class="form-group">
+                <label class="form-label">姓名 *</label>
+                <input type="text" id="birthdayName" class="form-input" placeholder="请输入姓名">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">日历类型 *</label>
+                <select id="birthdayCalendarType" class="form-input">
+                    <option value="solar">公历</option>
+                    <option value="lunar">农历</option>
+                </select>
+            </div>
+            
+            <!-- 公历日期选择器 -->
+            <div class="form-group" id="solarDateContainer">
+                <label class="form-label">生日日期 *</label>
+                <input type="date" id="birthdayDate" class="form-input date-input">
+            </div>
+            
+            <!-- 农历日期选择器 -->
+            <div class="form-group" id="lunarDateContainer" style="display: none;">
+                <label class="form-label">生日日期 *</label>
+                <div class="lunar-date-picker">
+                    <select id="lunarYear" class="form-input lunar-select"></select>
+                    <select id="lunarMonth" class="form-input lunar-select"></select>
+                    <select id="lunarDay" class="form-input lunar-select"></select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">关系</label>
+                <input type="text" id="birthdayRelation" class="form-input" placeholder="例如：家人、朋友、同事">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">备注</label>
+                <textarea id="birthdayNotes" class="form-input textarea-input" placeholder="添加备注信息"></textarea>
+            </div>
+            
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="navigateTo('birthday-detail.html?id=${currentIndex}')">返回</button>
+                <button class="btn btn-primary" onclick="saveEdit()">保存修改</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <nav class="bottom-box">
+            <a href="index.html">
+                <p class="fa fa-book"></p>
+                <p>账单</p>
+            </a>
+            <a href="todo.html">
+                <p class="fa fa-list"></p>
+                <p>待办事项</p>
+            </a>
+            <a href="note.html">
+                <p class="fa fa-pencil"></p>
+                <p>笔记</p>
+            </a>
+            <a href="birthday.html" class="active">
+                <p class="fa fa-birthday-cake"></p>
+                <p>生日管家</p>
+            </a>
+            <a href="settings.html">
+                <p class="fa fa-gear"></p>
+                <p>设置</p>
+            </a>
+        </nav>
+    </footer>
+
+    <div class="success-message" id="successMessage">保存成功！</div>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            setActiveNavItem('birthday');
+            const urlParams = new URLSearchParams(window.location.search);
+            currentIndex = parseInt(urlParams.get('id'));
+            loadBirthdayData();
+            initLunarDatePicker();
+            setupCalendarTypeChange();
+        });
+        
+        let currentIndex = 0;
+        let currentBirthday = null;
+        
+        function setupCalendarTypeChange() {
+            const calendarTypeSelect = document.getElementById('birthdayCalendarType');
+            const solarDateContainer = document.getElementById('solarDateContainer');
+            const lunarDateContainer = document.getElementById('lunarDateContainer');
+            
+            calendarTypeSelect.addEventListener('change', function() {
+                if (this.value === 'solar') {
+                    solarDateContainer.style.display = 'block';
+                    lunarDateContainer.style.display = 'none';
+                } else {
+                    solarDateContainer.style.display = 'none';
+                    lunarDateContainer.style.display = 'block';
+                    // 更新农历日期选择器
+                    updateLunarDatePicker();
+                }
+            });
+        }
+        
+        function initLunarDatePicker() {
+            const lunarYearSelect = document.getElementById('lunarYear');
+            const lunarMonthSelect = document.getElementById('lunarMonth');
+            const lunarDaySelect = document.getElementById('lunarDay');
+            
+            // 生成年份选项（最近100年）
+            const currentYear = new Date().getFullYear();
+            for (let i = currentYear; i >= currentYear - 100; i--) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i + '年';
+                lunarYearSelect.appendChild(option);
+            }
+            
+            // 生成月份选项（农历12个月 + 闰月）
+            for (let i = 1; i <= 12; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i + '月';
+                lunarMonthSelect.appendChild(option);
+            }
+            const leapOption = document.createElement('option');
+            leapOption.value = 'leap';
+            leapOption.textContent = '闰月';
+            lunarMonthSelect.appendChild(leapOption);
+            
+            // 生成日期选项（最多30天）
+            for (let i = 1; i <= 30; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i + '日';
+                lunarDaySelect.appendChild(option);
+            }
+            
+            // 监听年份和月份变化，更新日期选项
+            lunarYearSelect.addEventListener('change', updateLunarDays);
+            lunarMonthSelect.addEventListener('change', updateLunarDays);
+        }
+        
+        function updateLunarDays() {
+            const lunarYearSelect = document.getElementById('lunarYear');
+            const lunarMonthSelect = document.getElementById('lunarMonth');
+            const lunarDaySelect = document.getElementById('lunarDay');
+            
+            const year = parseInt(lunarYearSelect.value);
+            const month = lunarMonthSelect.value;
+            
+            // 清空日期选项
+            lunarDaySelect.innerHTML = '';
+            
+            // 计算农历月份的天数
+            let daysInMonth = 30; // 默认30天
+            
+            try {
+                const solar = lunar.Solar.fromYmd(year, 1, 1);
+                const lunarDate = solar.getLunar();
+                
+                if (month === 'leap') {
+                    // 检查是否有闰月
+                    if (lunarDate.getLeapMonth() > 0) {
+                        daysInMonth = getLunarDays(year, lunarDate.getLeapMonth(), true);
+                    }
+                } else {
+                    daysInMonth = getLunarDays(year, parseInt(month), false);
+                }
+            } catch (e) {
+                console.error('计算农历天数时出错:', e);
+            }
+            
+            // 生成日期选项
+            for (let i = 1; i <= daysInMonth; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i + '日';
+                lunarDaySelect.appendChild(option);
+            }
+        }
+        
+        function getLunarDays(year, month, isLeap) {
+            // 使用lunar-javascript库计算农历月份的天数
+            try {
+                // 找到该农历月份的第一天
+                let solar;
+                if (isLeap) {
+                    // 找到闰月的第一天
+                    for (let day = 1; day <= 31; day++) {
+                        solar = lunar.Solar.fromYmd(year, 1, day);
+                        const lunarDate = solar.getLunar();
+                        if (lunarDate.getLeapMonth() === month && lunarDate.getMonth() === month) {
+                            break;
+                        }
+                    }
+                } else {
+                    // 找到普通月份的第一天
+                    for (let day = 1; day <= 31; day++) {
+                        solar = lunar.Solar.fromYmd(year, 1, day);
+                        const lunarDate = solar.getLunar();
+                        if (lunarDate.getMonth() === month && lunarDate.getLeapMonth() !== month) {
+                            break;
+                        }
+                    }
+                }
+                
+                // 计算该月的天数
+                let days = 0;
+                let currentLunarMonth = solar.getLunar().getMonth();
+                let currentIsLeap = solar.getLunar().getLeapMonth() === currentLunarMonth;
+                
+                while (true) {
+                    solar = solar.next();
+                    const lunarDate = solar.getLunar();
+                    const newMonth = lunarDate.getMonth();
+                    const newIsLeap = lunarDate.getLeapMonth() === newMonth;
+                    
+                    if (newMonth !== currentLunarMonth || newIsLeap !== currentIsLeap) {
+                        break;
+                    }
+                    days++;
+                }
+                
+                return days;
+            } catch (e) {
+                console.error('计算农历天数时出错:', e);
+                return 30; // 默认返回30天
+            }
+        }
+        
+        function loadBirthdayData() {
+            const birthdays = getBirthdays();
+            const sortedBirthdays = sortByDate(birthdays, 'date', false);
+            currentBirthday = sortedBirthdays[currentIndex];
+            
+            document.getElementById('birthdayName').value = currentBirthday.name;
+            document.getElementById('birthdayCalendarType').value = currentBirthday.calendarType || 'solar';
+            document.getElementById('birthdayRelation').value = currentBirthday.relation || '';
+            document.getElementById('birthdayNotes').value = currentBirthday.notes || '';
+            
+            // 根据日历类型显示对应的日期选择器
+            const calendarType = currentBirthday.calendarType || 'solar';
+            const solarDateContainer = document.getElementById('solarDateContainer');
+            const lunarDateContainer = document.getElementById('lunarDateContainer');
+            
+            if (calendarType === 'solar') {
+                solarDateContainer.style.display = 'block';
+                lunarDateContainer.style.display = 'none';
+                document.getElementById('birthdayDate').value = currentBirthday.date;
+            } else {
+                solarDateContainer.style.display = 'none';
+                lunarDateContainer.style.display = 'block';
+                // 将公历日期转换为农历日期并设置到选择器
+                updateLunarDatePicker();
+            }
+        }
+        
+        function updateLunarDatePicker() {
+            try {
+                const dateParts = currentBirthday.date.split('-');
+                const year = parseInt(dateParts[0]);
+                const month = parseInt(dateParts[1]);
+                const day = parseInt(dateParts[2]);
+                
+                const solar = lunar.Solar.fromYmd(year, month, day);
+                const lunarDate = solar.getLunar();
+                
+                document.getElementById('lunarYear').value = lunarDate.getYear();
+                
+                if (lunarDate.getLeapMonth() === lunarDate.getMonth()) {
+                    document.getElementById('lunarMonth').value = 'leap';
+                } else {
+                    document.getElementById('lunarMonth').value = lunarDate.getMonth();
+                }
+                
+                document.getElementById('lunarDay').value = lunarDate.getDay();
+                
+                // 更新日期选项
+                updateLunarDays();
+            } catch (e) {
+                console.error('更新农历日期选择器出错:', e);
+            }
+        }
+        
+        function saveEdit() {
+            const name = document.getElementById('birthdayName').value.trim();
+            const calendarType = document.getElementById('birthdayCalendarType').value;
+            let date;
+            
+            if (calendarType === 'solar') {
+                date = document.getElementById('birthdayDate').value;
+            } else {
+                // 处理农历日期
+                const lunarYear = document.getElementById('lunarYear').value;
+                const lunarMonth = document.getElementById('lunarMonth').value;
+                const lunarDay = document.getElementById('lunarDay').value;
+                
+                // 将农历日期转换为公历日期
+                date = convertLunarToSolar(lunarYear, lunarMonth, lunarDay);
+            }
+            
+            const relation = document.getElementById('birthdayRelation').value.trim();
+            const notes = document.getElementById('birthdayNotes').value.trim();
+            
+            if (!name) {
+                alert('请输入姓名');
+                return;
+            }
+            
+            if (!date) {
+                alert('请选择生日日期');
+                return;
+            }
+            
+            const birthdays = getBirthdays();
+            const sortedBirthdays = sortByDate(birthdays, 'date', false);
+            const originalIndex = birthdays.findIndex(b => b.createdAt === sortedBirthdays[currentIndex].createdAt);
+            
+            if (originalIndex !== -1) {
+                birthdays[originalIndex] = {
+                    name: name,
+                    date: date,
+                    calendarType: calendarType,
+                    relation: relation,
+                    notes: notes,
+                    createdAt: currentBirthday.createdAt
+                };
+                saveBirthdays(birthdays);
+                
+                showSuccessMessage();
+                setTimeout(() => {
+                    navigateTo('birthday-detail.html?id=${currentIndex}');
+                }, 1000);
+            }
+        }
+        
+        function convertLunarToSolar(year, month, day) {
+            try {
+                const isLeap = month === 'leap';
+                const lunarMonth = isLeap ? 0 : parseInt(month);
+                
+                // 找到对应的公历日期
+                let solar;
+                for (let i = 1; i <= 12; i++) {
+                    for (let j = 1; j <= 31; j++) {
+                        try {
+                            solar = lunar.Solar.fromYmd(parseInt(year), i, j);
+                            const lunarDate = solar.getLunar();
+                            
+                            if (isLeap) {
+                                if (lunarDate.getLeapMonth() > 0 && 
+                                    lunarDate.getMonth() === lunarDate.getLeapMonth() && 
+                                    lunarDate.getDay() === parseInt(day)) {
+                                    return solar.toYmd();
+                                }
+                            } else {
+                                if (lunarDate.getMonth() === lunarMonth && 
+                                    lunarDate.getLeapMonth() !== lunarMonth && 
+                                    lunarDate.getDay() === parseInt(day)) {
+                                    return solar.toYmd();
+                                }
+                            }
+                        } catch (e) {
+                            // 忽略无效日期
+                        }
+                    }
+                }
+                
+                return '';
+            } catch (e) {
+                console.error('农历转公历出错:', e);
+                return '';
+            }
+        }
+    </script>
+</body>
+</html>

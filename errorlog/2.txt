@@ -1,0 +1,106 @@
+2026-04-14 23:09:15.716 15331-15331 nativeloader            com.example.shijian2                 D  Load /data/user/0/com.example.shijian2/code_cache/startup_agents/a82ed9e3-agent.so using system ns (caller=<unknown>): ok
+2026-04-14 23:09:15.704 15331-15331 re-initialized>         com.example.shijian2                 W  type=1400 audit(0.0:54): avc:  granted  { execute } for  path="/data/data/com.example.shijian2/code_cache/startup_agents/a82ed9e3-agent.so" dev="dm-56" ino=361526 scontext=u:r:untrusted_app:s0:c227,c256,c512,c768 tcontext=u:object_r:app_data_file:s0:c227,c256,c512,c768 tclass=file app=com.example.shijian2
+2026-04-14 23:09:15.728 15331-15331 xample.shijian2         com.example.shijian2                 W  hiddenapi: DexFile /data/data/com.example.shijian2/code_cache/.studio/instruments-2fd5708c.jar is in boot class path but is not in a known location
+2026-04-14 23:09:15.907 15331-15331 xample.shijian2         com.example.shijian2                 W  Redefining intrinsic method java.lang.Thread java.lang.Thread.currentThread(). This may cause the unexpected use of the original definition of java.lang.Thread java.lang.Thread.currentThread()in methods that have already been compiled.
+2026-04-14 23:09:15.907 15331-15331 xample.shijian2         com.example.shijian2                 W  Redefining intrinsic method boolean java.lang.Thread.interrupted(). This may cause the unexpected use of the original definition of boolean java.lang.Thread.interrupted()in methods that have already been compiled.
+2026-04-14 23:09:16.262 15331-15331 nativeloader            com.example.shijian2                 D  Configuring clns-9 for other apk /data/app/~~aOXb3K47eVDZZtt_V70aVA==/com.example.shijian2-BpLhxPqzIwPPHlET2Yfcag==/base.apk. target_sdk_version=36, uses_libraries=, library_path=/data/app/~~aOXb3K47eVDZZtt_V70aVA==/com.example.shijian2-BpLhxPqzIwPPHlET2Yfcag==/lib/x86_64:/data/app/~~aOXb3K47eVDZZtt_V70aVA==/com.example.shijian2-BpLhxPqzIwPPHlET2Yfcag==/base.apk!/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/com.example.shijian2
+2026-04-14 23:09:16.276 15331-15331 GraphicsEnvironment     com.example.shijian2                 V  Currently set values for:
+2026-04-14 23:09:16.276 15331-15331 GraphicsEnvironment     com.example.shijian2                 V    angle_gl_driver_selection_pkgs=[]
+2026-04-14 23:09:16.276 15331-15331 GraphicsEnvironment     com.example.shijian2                 V    angle_gl_driver_selection_values=[]
+2026-04-14 23:09:16.276 15331-15331 GraphicsEnvironment     com.example.shijian2                 V  com.example.shijian2 is not listed in per-application setting
+2026-04-14 23:09:16.276 15331-15331 GraphicsEnvironment     com.example.shijian2                 V  ANGLE allowlist from config: com.dreamgames.royalmatch com.dts.freefiremax com.dxx.firenow com.gramgames.mergedragons com.ludo.king com.mojang.minecraftpe com.my.defense com.nintendo.zaka com.os.airforce com.playrix.fishdomdd.gplay io.teslatech.callbreak jp.konami.prospia net.peakgames.toonblast
+2026-04-14 23:09:16.276 15331-15331 GraphicsEnvironment     com.example.shijian2                 V  No special selections for ANGLE, returning default driver choice
+2026-04-14 23:09:16.277 15331-15331 GraphicsEnvironment     com.example.shijian2                 V  Neither updatable production driver nor prerelease driver is supported.
+2026-04-14 23:09:16.280 15331-15331 ActivityThread          com.example.shijian2                 W  Application com.example.shijian2 is suspending. Debugger needs to resume to continue.
+2026-04-14 23:09:16.280 15331-15331 System.out              com.example.shijian2                 I  Sending WAIT chunk
+2026-04-14 23:09:16.281 15331-15331 System.out              com.example.shijian2                 I  Waiting for debugger first packet
+2026-04-14 23:09:16.316 15331-15335 nativeloader            com.example.shijian2                 D  Load libjdwp.so using system ns (caller=<unknown>): ok
+2026-04-14 23:09:16.382 15331-15331 System.out              com.example.shijian2                 I  Debug.suspendAllAndSentVmStart
+2026-04-14 23:09:16.668 15331-15331 System.out              com.example.shijian2                 I  Debug.suspendAllAndSendVmStart, resumed
+2026-04-14 23:09:16.750 15331-15355 DisplayManager          com.example.shijian2                 I  Choreographer implicitly registered for the refresh rate.
+2026-04-14 23:09:16.794 15331-15331 DesktopExperienceFlags  com.example.shijian2                 D  Toggle override initialized to: false
+2026-04-14 23:09:16.798 15331-15331 ashmem                  com.example.shijian2                 E  Pinning is deprecated since Android Q. Please use trim or other methods.
+2026-04-14 23:09:16.800 15331-15355 GFXSTREAM               com.example.shijian2                 I  [eglDisplay.cpp(297)] Opening libGLESv1_CM_emulation.so
+2026-04-14 23:09:16.800 15331-15355 GFXSTREAM               com.example.shijian2                 I  [eglDisplay.cpp(297)] Opening libGLESv2_emulation.so
+2026-04-14 23:09:16.808 15331-15355 HWUI                    com.example.shijian2                 W  Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+2026-04-14 23:09:16.808 15331-15355 HWUI                    com.example.shijian2                 W  Failed to initialize 101010-2 format, error = EGL_SUCCESS
+2026-04-14 23:09:16.814 15331-15331 CompatChangeReporter    com.example.shijian2                 D  Compat change id reported: 377864165; UID 10227; state: ENABLED
+2026-04-14 23:09:16.814 15331-15331 DesktopModeFlags        com.example.shijian2                 D  Toggle override initialized to: OVERRIDE_UNSET
+2026-04-14 23:09:16.976 15331-15331 HWUI                    com.example.shijian2                 W  Unknown dataspace 0
+2026-04-14 23:09:16.991 15331-15331 WindowOnBackDispatcher  com.example.shijian2                 D  setTopOnBackInvokedCallback (unwrapped): android.app.Activity$$ExternalSyntheticLambda0@7d9a586
+2026-04-14 23:09:17.343 15331-15336 xample.shijian2         com.example.shijian2                 I  Compiler allocated 5082KB to compile void android.view.ViewRootImpl.performTraversals()
+2026-04-14 23:09:17.802 15331-15331 VRI[MainActivity]       com.example.shijian2                 D  WindowInsets changed: 1080x2400 statusBars:[0,63,0,0] navigationBars:[0,0,0,63] mandatorySystemGestures:[0,63,0,84] 
+2026-04-14 23:09:18.048 15331-15331 HWUI                    com.example.shijian2                 I  Using FreeType backend (prop=Auto)
+2026-04-14 23:09:18.344 15331-15364 HWUI                    com.example.shijian2                 I  Davey! duration=1298ms; Flags=1, FrameTimelineVsyncId=491546, IntendedVsync=13339976185418, Vsync=13339976185418, InputEventId=0, HandleInputStart=13339978698900, AnimationStart=13339978740600, PerformTraversalsStart=13339978806900, DrawStart=13341199159700, FrameDeadline=13339992852084, FrameStartTime=13339978598500, FrameInterval=16666666, WorkloadTarget=16666666, SyncQueued=13341221223200, SyncStart=13341256506300, IssueDrawCommandsStart=13341256660300, SwapBuffers=13341288665800, FrameCompleted=13341310227500, DequeueBufferDuration=20400, QueueBufferDuration=18302400, GpuCompleted=13341310122900, SwapBuffersCompleted=13341310227500, DisplayPresentTime=0, CommandSubmissionCompleted=13341288665800, 
+2026-04-14 23:09:18.401 15331-15331 Choreographer           com.example.shijian2                 I  Skipped 69 frames!  The application may be doing too much work on its main thread.
+2026-04-14 23:09:18.426 15331-15331 BillRepository          com.example.shijian2                 D  Reading bills from DataStore: null
+2026-04-14 23:09:18.426 15331-15331 BillRepository          com.example.shijian2                 D  No bills found in DataStore
+2026-04-14 23:09:18.430 15331-15342 HWUI                    com.example.shijian2                 I  Davey! duration=1183ms; Flags=0, FrameTimelineVsyncId=491568, IntendedVsync=13340226185408, Vsync=13341376185362, InputEventId=0, HandleInputStart=13341390002900, AnimationStart=13341390038200, PerformTraversalsStart=13341405651700, DrawStart=13341405790800, FrameDeadline=13341342852030, FrameStartTime=13341389582800, FrameInterval=16666666, WorkloadTarget=16666666, SyncQueued=13341407019400, SyncStart=13341407249200, IssueDrawCommandsStart=13341407304900, SwapBuffers=13341407778700, FrameCompleted=13341410378700, DequeueBufferDuration=23600, QueueBufferDuration=190100, GpuCompleted=13341410378700, SwapBuffersCompleted=13341408691200, DisplayPresentTime=0, CommandSubmissionCompleted=13341407778700, 
+2026-04-14 23:09:18.433 15331-15331 InsetsController        com.example.shijian2                 D  hide(ime())
+2026-04-14 23:09:18.434 15331-15331 ImeTracker              com.example.shijian2                 I  com.example.shijian2:4961fdb2: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+2026-04-14 23:09:21.855 15331-15377 ProfileInstaller        com.example.shijian2                 D  Installing profile for com.example.shijian2
+2026-04-14 23:09:21.952 15331-15331 InsetsController        com.example.shijian2                 D  show(ime())
+2026-04-14 23:09:21.952 15331-15331 ImeTracker              com.example.shijian2                 I  com.example.shijian2:76f082e6: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT_BY_INSETS_API fromUser false
+2026-04-14 23:09:21.956 15331-15331 InsetsController        com.example.shijian2                 D  Setting requestedVisibleTypes to 511 (was 503)
+2026-04-14 23:09:21.980 15331-15331 ImeTracker              com.example.shijian2                 I  com.example.shijian2:4f3a6184: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+2026-04-14 23:09:21.980 15331-15331 InsetsController        com.example.shijian2                 D  show(ime())
+2026-04-14 23:09:21.980 15331-15331 ImeTracker              com.example.shijian2                 I  com.example.shijian2:4f3a6184: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+2026-04-14 23:09:22.105 15331-15331 WindowOnBackDispatcher  com.example.shijian2                 D  setTopOnBackInvokedCallback (unwrapped): android.view.ImeBackAnimationController@3f18635
+2026-04-14 23:09:22.224 15331-15331 InteractionJankMonitor  com.example.shijian2                 W  Initializing without READ_DEVICE_CONFIG permission. enabled=false, interval=1, missedFrameThreshold=3, frameTimeThreshold=64, package=com.example.shijian2
+2026-04-14 23:09:22.354 15331-15331 InsetsController        com.example.shijian2                 D  show(ime())
+2026-04-14 23:09:22.354 15331-15331 ImeTracker              com.example.shijian2                 I  com.example.shijian2:7584a1ce: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT_BY_INSETS_API fromUser false
+2026-04-14 23:09:22.354 15331-15331 ImeTracker              com.example.shijian2                 I  com.example.shijian2:7584a1ce: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+2026-04-14 23:09:22.376 15331-15331 ImeTracker              com.example.shijian2                 I  com.example.shijian2:f51c3dc3: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+2026-04-14 23:09:22.376 15331-15331 InsetsController        com.example.shijian2                 D  show(ime())
+2026-04-14 23:09:22.376 15331-15331 ImeTracker              com.example.shijian2                 I  com.example.shijian2:f51c3dc3: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+2026-04-14 23:09:22.443 15331-15331 ImeTracker              com.example.shijian2                 I  com.example.shijian2:76f082e6: onShown
+2026-04-14 23:09:23.824 15331-15331 InsetsController        com.example.shijian2                 D  show(ime())
+2026-04-14 23:09:23.824 15331-15331 ImeTracker              com.example.shijian2                 I  com.example.shijian2:2059f7c7: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT_BY_INSETS_API fromUser false
+2026-04-14 23:09:23.824 15331-15331 ImeTracker              com.example.shijian2                 I  com.example.shijian2:2059f7c7: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+2026-04-14 23:09:23.842 15331-15331 ImeTracker              com.example.shijian2                 I  com.example.shijian2:a3e078a1: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+2026-04-14 23:09:23.842 15331-15331 InsetsController        com.example.shijian2                 D  show(ime())
+2026-04-14 23:09:23.842 15331-15331 ImeTracker              com.example.shijian2                 I  com.example.shijian2:a3e078a1: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+2026-04-14 23:09:25.408 15331-15331 NoteRepository          com.example.shijian2                 E  Error saving notes
+                                                                                                    kotlinx.serialization.SerializationException: Serializer for class 'Note' is not found.
+                                                                                                    Please ensure that class is marked as '@Serializable' and that the serialization compiler plugin is applied.
+                                                                                                    
+                                                                                                    	at kotlinx.serialization.internal.Platform_commonKt.serializerNotRegistered(Platform.common.kt:91)
+                                                                                                    	at kotlinx.serialization.internal.PlatformKt.platformSpecificSerializerNotRegistered(Platform.kt:28)
+                                                                                                    	at kotlinx.serialization.SerializersKt__SerializersKt.serializer(Serializers.kt:134)
+                                                                                                    	at kotlinx.serialization.SerializersKt.serializer(Unknown Source:1)
+                                                                                                    	at kotlinx.serialization.SerializersKt__SerializersKt.serializersForParameters(Serializers.kt:247)
+                                                                                                    	at kotlinx.serialization.SerializersKt.serializersForParameters(Unknown Source:1)
+                                                                                                    	at kotlinx.serialization.SerializersKt__SerializersKt.serializerByKTypeImpl$SerializersKt__SerializersKt(Serializers.kt:204)
+                                                                                                    	at kotlinx.serialization.SerializersKt__SerializersKt.serializer(Serializers.kt:133)
+                                                                                                    	at kotlinx.serialization.SerializersKt.serializer(Unknown Source:1)
+                                                                                                    	at com.example.shijian2.data.NoteRepository$saveNotes$2.invokeSuspend(NoteRepository.kt:82)
+                                                                                                    	at com.example.shijian2.data.NoteRepository$saveNotes$2.invoke(Unknown Source:8)
+                                                                                                    	at com.example.shijian2.data.NoteRepository$saveNotes$2.invoke(Unknown Source:4)
+                                                                                                    	at androidx.datastore.preferences.core.PreferencesKt$edit$2.invokeSuspend(Preferences.kt:329)
+                                                                                                    	at androidx.datastore.preferences.core.PreferencesKt$edit$2.invoke(Unknown Source:8)
+                                                                                                    	at androidx.datastore.preferences.core.PreferencesKt$edit$2.invoke(Unknown Source:4)
+                                                                                                    	at androidx.datastore.preferences.core.PreferenceDataStore$updateData$2.invokeSuspend(PreferenceDataStoreFactory.kt:85)
+                                                                                                    	at androidx.datastore.preferences.core.PreferenceDataStore$updateData$2.invoke(Unknown Source:8)
+                                                                                                    	at androidx.datastore.preferences.core.PreferenceDataStore$updateData$2.invoke(Unknown Source:4)
+                                                                                                    	at androidx.datastore.core.SingleProcessDataStore$transformAndWrite$newData$1.invokeSuspend(SingleProcessDataStore.kt:402)
+                                                                                                    	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+                                                                                                    	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:108)
+                                                                                                    	at androidx.compose.ui.platform.AndroidUiDispatcher.performTrampolineDispatch(AndroidUiDispatcher.android.kt:81)
+                                                                                                    	at androidx.compose.ui.platform.AndroidUiDispatcher.access$performTrampolineDispatch(AndroidUiDispatcher.android.kt:41)
+                                                                                                    	at androidx.compose.ui.platform.AndroidUiDispatcher$dispatchCallback$1.run(AndroidUiDispatcher.android.kt:57)
+                                                                                                    	at android.os.Handler.handleCallback(Handler.java:1070)
+                                                                                                    	at android.os.Handler.dispatchMessage(Handler.java:125)
+                                                                                                    	at android.os.Looper.dispatchMessage(Looper.java:333)
+                                                                                                    	at android.os.Looper.loopOnce(Looper.java:263)
+                                                                                                    	at android.os.Looper.loop(Looper.java:367)
+                                                                                                    	at android.app.ActivityThread.main(ActivityThread.java:9287)
+                                                                                                    	at java.lang.reflect.Method.invoke(Native Method)
+                                                                                                    	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:566)
+                                                                                                    	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:929)
+2026-04-14 23:09:25.458 15331-15331 InsetsController        com.example.shijian2                 D  hide(ime())
+2026-04-14 23:09:25.458 15331-15331 ImeTracker              com.example.shijian2                 I  com.example.shijian2:dd350164: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT_BY_INSETS_API fromUser false
+2026-04-14 23:09:25.458 15331-15331 WindowOnBackDispatcher  com.example.shijian2                 D  setTopOnBackInvokedCallback (unwrapped): android.app.Activity$$ExternalSyntheticLambda0@7d9a586
+2026-04-14 23:09:25.459 15331-15331 InsetsController        com.example.shijian2                 D  Setting requestedVisibleTypes to 503 (was 511)
+2026-04-14 23:09:25.502 15331-15331 ImeTracker              com.example.shijian2                 I  system_server:4e91fa62: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+2026-04-14 23:09:25.816 15331-15337 xample.shijian2         com.example.shijian2                 W  userfaultfd: MOVE ioctl seems unsupported: Try again
+2026-04-14 23:09:25.826 15331-15337 xample.shijian2         com.example.shijian2                 I  Background concurrent mark compact GC freed 5408KB AllocSpace bytes, 0(0B) LOS objects, 49% free, 4866KB/9733KB, paused 797us,5.786ms total 28.397ms

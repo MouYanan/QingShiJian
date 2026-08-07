@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="renderer" content="webkit">
+    <meta name="wap-font-scale" content="no">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="时笺">
+    <title>时笺 - 设置</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 24px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        
+        .close-btn:hover {
+            color: #374151;
+        }
+        
+        /* 设置项样式 */
+        .setting-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .setting-option:last-child {
+            border-bottom: none;
+        }
+        
+        .setting-option-info h3 {
+            margin: 0 0 4px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .setting-option-info p {
+            margin: 0;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        /* 开关样式 */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #e5e7eb;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #3b82f6;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        /* 背景图预览 */
+        .bg-preview {
+            width: 100%;
+            height: 150px;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 16px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .bg-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .bg-preview.empty {
+            background-color: #f9fafb;
+        }
+        
+        .bg-preview-label {
+            color: #6b7280;
+            text-align: center;
+        }
+        
+        .bg-preview-actions {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .bg-preview-actions button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        /* Hbuilder 5+ App 提示 */
+        .hbuilder-tip {
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 12px;
+            margin: 16px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 14px;
+        }
+        
+        .hbuilder-tip h4 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            color: #1d4ed8;
+        }
+        
+        .hbuilder-tip p {
+            margin: 0;
+            color: #3b82f6;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-container">
+            <a href="index.html" class="logo">时笺</a>
+        </div>
+    </nav>
+
+    <div class="container" style="padding-top: 80px; padding-bottom: 100px;">
+        <div class="page-header">
+            <h1>设置</h1>
+            <p>管理应用偏好和选项</p>
+        </div>
+        
+        <div class="setting-item" onclick="openModal('notificationModal')">
+            <div class="setting-title">通知设置</div>
+            <div class="setting-description">管理应用通知和提醒</div>
+        </div>
+        
+        <div class="setting-item" onclick="navigateTo('permissions.html')">
+            <div class="setting-title">权限管理</div>
+            <div class="setting-description">管理应用所需的权限</div>
+        </div>
+        
+        <div class="setting-item" onclick="openModal('themeModal')">
+            <div class="setting-title">主题设置</div>
+            <div class="setting-description">更改应用外观和主题</div>
+        </div>
+        
+        <div class="setting-item" onclick="handleDataBackup()">
+            <div class="setting-title">数据备份</div>
+            <div class="setting-description">备份和恢复您的数据</div>
+        </div>
+        
+        <div class="setting-item" onclick="handleAbout()">
+            <div class="setting-title">关于</div>
+            <div class="setting-description">版本信息和帮助</div>
+        </div>
+        
+        <div style="margin-top: 24px;">
+            <button class="btn btn-secondary" style="width: 100%;" onclick="handleExportData()">
+                <i class="fas fa-download" style="margin-right: 8px;"></i>
+                导出所有数据
+            </button>
+        </div>
+    </div>
+
+    <!-- 通知设置模态框 -->
+    <div id="notificationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>通知设置</h2>
+                <button class="close-btn" onclick="closeModal('notificationModal')">&times;</button>
+            </div>
+            
+            <div class="setting-option">
+                <div class="setting-option-info">
+                    <h3>账单提醒</h3>
+                    <p>接收账单相关的通知</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="billNotifications" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="setting-option">
+                <div class="setting-option-info">
+                    <h3>待办事项提醒</h3>
+                    <p>接收待办事项的截止提醒</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="todoNotifications" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="setting-option">
+                <div class="setting-option-info">
+                    <h3>生日提醒</h3>
+                    <p>提前接收生日提醒</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="birthdayNotifications" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="setting-option">
+                <div class="setting-option-info">
+                    <h3>每日总结</h3>
+                    <p>接收每日任务和账单总结</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="dailySummary" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="setting-option">
+                <div class="setting-option-info">
+                    <h3>声音提醒</h3>
+                    <p>通知时播放提示音</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="soundNotifications" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="setting-option">
+                <div class="setting-option-info">
+                    <h3>振动提醒</h3>
+                    <p>通知时触发振动</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="vibrationNotifications" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div style="margin-top: 24px;">
+                <button class="btn btn-primary" onclick="saveNotificationSettings()" style="width: 100%;">
+                    保存设置
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主题设置模态框 -->
+    <div id="themeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>主题设置</h2>
+                <button class="close-btn" onclick="closeModal('themeModal')">&times;</button>
+            </div>
+            
+            <div class="hbuilder-tip">
+                <h4>Hbuilder 5+ App 说明</h4>
+                <p>本应用使用 Hbuilder 5+ App 模板开发，背景图功能兼容移动端。用户可以通过相册选择或拍摄照片作为应用背景。</p>
+            </div>
+            
+            <div class="setting-option">
+                <div class="setting-option-info">
+                    <h3>主题模式</h3>
+                    <p>选择应用的主题模式</p>
+                </div>
+                <select id="themeMode" class="form-input" style="width: auto;">
+                    <option value="light">浅色模式</option>
+                    <option value="dark">深色模式</option>
+                </select>
+            </div>
+            
+            <div class="setting-option">
+                <div class="setting-option-info">
+                    <h3>背景图片</h3>
+                    <p>设置应用的背景图片</p>
+                </div>
+            </div>
+            
+            <div class="bg-preview empty" id="bgPreview">
+                <div class="bg-preview-label">
+                    <i class="fas fa-image" style="font-size: 32px; color: #9ca3af; margin-bottom: 8px; display: block;"></i>
+                    <p>点击选择背景图片</p>
+                    <p style="font-size: 12px; margin-top: 4px;">支持 JPG、PNG 格式</p>
+                </div>
+                <div class="bg-preview-actions" id="bgPreviewActions" style="display: none;">
+                    <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="changeBackground()">更换</button>
+                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="removeBackground()">移除</button>
+                </div>
+            </div>
+            
+            <!-- 隐藏的文件输入 -->
+            <input type="file" id="bgFileInput" accept="image/*" style="display: none;" onchange="handleBgFileChange(event)">
+            
+            <div class="setting-option">
+                <div class="setting-option-info">
+                    <h3>背景模糊度</h3>
+                    <p>调整背景图片的模糊效果</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="bgBlur" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div style="margin-top: 24px;">
+                <button class="btn btn-primary" onclick="saveThemeSettings()" style="width: 100%;">
+                    保存设置
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <nav class="bottom-box">
+            <a href="index.html">
+                <p class="fa fa-book"></p>
+                <p>账单</p>
+            </a>
+            <a href="todo.html">
+                <p class="fa fa-list"></p>
+                <p>待办事项</p>
+            </a>
+            <a href="note.html">
+                <p class="fa fa-pencil"></p>
+                <p>笔记</p>
+            </a>
+            <a href="birthday.html">
+                <p class="fa fa-birthday-cake"></p>
+                <p>生日管家</p>
+            </a>
+            <a href="settings.html" class="active">
+                <p class="fa fa-gear"></p>
+                <p>设置</p>
+            </a>
+        </nav>
+    </footer>
+
+    <div class="success-message" id="successMessage">保存成功！</div>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            setActiveNavItem('settings');
+            loadSettings();
+        });
+
+        // 模态框操作
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+
+        // 加载设置
+        function loadSettings() {
+            // 加载通知设置
+            const notificationSettings = JSON.parse(localStorage.getItem('notificationSettings') || '{}');
+            document.getElementById('billNotifications').checked = notificationSettings.bill || true;
+            document.getElementById('todoNotifications').checked = notificationSettings.todo || true;
+            document.getElementById('birthdayNotifications').checked = notificationSettings.birthday || true;
+            document.getElementById('dailySummary').checked = notificationSettings.dailySummary || true;
+            document.getElementById('soundNotifications').checked = notificationSettings.sound || true;
+            document.getElementById('vibrationNotifications').checked = notificationSettings.vibration || true;
+            
+            // 加载主题设置
+            const themeSettings = JSON.parse(localStorage.getItem('themeSettings') || '{}');
+            
+            // 加载主题模式
+            document.getElementById('themeMode').value = themeSettings.mode || 'light';
+            
+            // 加载背景模糊度
+            document.getElementById('bgBlur').checked = themeSettings.blur || true;
+            
+            // 加载背景图片
+            if (themeSettings.background) {
+                const preview = document.getElementById('bgPreview');
+                preview.innerHTML = `<img src="${themeSettings.background}" alt="背景图">
+                                    <div class="bg-preview-actions" id="bgPreviewActions">
+                                        <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="changeBackground()">更换</button>
+                                        <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="removeBackground()">移除</button>
+                                    </div>`;
+                preview.classList.remove('empty');
+            }
+        }
+
+        // 通知设置
+        function saveNotificationSettings() {
+            const settings = {
+                bill: document.getElementById('billNotifications').checked,
+                todo: document.getElementById('todoNotifications').checked,
+                birthday: document.getElementById('birthdayNotifications').checked,
+                dailySummary: document.getElementById('dailySummary').checked,
+                sound: document.getElementById('soundNotifications').checked,
+                vibration: document.getElementById('vibrationNotifications').checked
+            };
+            
+            localStorage.setItem('notificationSettings', JSON.stringify(settings));
+            showSuccessMessage('通知设置已保存');
+            
+            // 模拟在 Hbuilder 5+ App 中调用原生通知 API
+            if (window.plus) {
+                // 这里可以添加 Hbuilder 5+ App 原生通知设置代码
+                console.log('通知设置已同步到 Hbuilder 5+ App');
+            }
+        }
+
+        // 主题设置 - 背景图片
+        document.getElementById('bgPreview').addEventListener('click', function() {
+            if (this.classList.contains('empty')) {
+                changeBackground();
+            }
+        });
+
+        function changeBackground() {
+            document.getElementById('bgFileInput').click();
+        }
+
+        function handleBgFileChange(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('bgPreview');
+                    preview.innerHTML = `<img src="${e.target.result}" alt="背景图">
+                                        <div class="bg-preview-actions" id="bgPreviewActions">
+                                            <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="changeBackground()">更换</button>
+                                            <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="removeBackground()">移除</button>
+                                        </div>`;
+                    preview.classList.remove('empty');
+                    
+                    // 在 Hbuilder 5+ App 中，这里可以调用原生相册 API
+                    if (window.plus) {
+                        console.log('使用 Hbuilder 5+ App 原生相册选择图片');
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeBackground() {
+            const preview = document.getElementById('bgPreview');
+            preview.innerHTML = `<div class="bg-preview-label">
+                                    <i class="fas fa-image" style="font-size: 32px; color: #9ca3af; margin-bottom: 8px; display: block;"></i>
+                                    <p>点击选择背景图片</p>
+                                    <p style="font-size: 12px; margin-top: 4px;">支持 JPG、PNG 格式</p>
+                                </div>
+                                <div class="bg-preview-actions" id="bgPreviewActions" style="display: none;">
+                                    <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="changeBackground()">更换</button>
+                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="removeBackground()">移除</button>
+                                </div>`;
+            preview.classList.add('empty');
+        }
+
+        // 保存主题设置
+        function saveThemeSettings() {
+            const preview = document.getElementById('bgPreview');
+            const img = preview.querySelector('img');
+            const background = img ? img.src : null;
+            
+            // 获取主题模式
+            const mode = document.getElementById('themeMode').value;
+            
+            const settings = {
+                mode: mode,
+                background: background,
+                blur: document.getElementById('bgBlur').checked
+            };
+            
+            localStorage.setItem('themeSettings', JSON.stringify(settings));
+            showSuccessMessage('主题设置已保存');
+            
+            // 应用主题
+            applyThemeMode(mode);
+            applyBackground(settings);
+        }
+
+        // 应用背景图
+        function applyBackground(settings) {
+            if (settings.background) {
+                document.body.style.backgroundImage = `url('${settings.background}')`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundPosition = 'center';
+                document.body.style.backgroundAttachment = 'fixed';
+                
+                if (settings.blur) {
+                    document.body.style.backdropFilter = 'blur(5px)';
+                } else {
+                    document.body.style.backdropFilter = 'none';
+                }
+            } else {
+                document.body.style.backgroundImage = 'none';
+                document.body.style.backdropFilter = 'none';
+            }
+        }
+
+        // 初始化应用背景
+        function initBackground() {
+            const themeSettings = JSON.parse(localStorage.getItem('themeSettings') || '{}');
+            applyBackground(themeSettings);
+        }
+
+        // 数据备份功能（保留原代码）
+        function handleDataBackup() {
+            const action = prompt('请选择操作：\n1. 备份数据\n2. 恢复数据\n3. 清除所有数据');
+            
+            if (action === '1') {
+                const data = {
+                    bills: getBills(),
+                    todos: getTodos(),
+                    notes: getNotes(),
+                    birthdays: getBirthdays(),
+                    exportedAt: new Date().toISOString()
+                };
+                exportData(data, `backup-${new Date().toISOString().split('T')[0]}.json`);
+            } else if (action === '2') {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                input.onchange = async (e) => {
+                    try {
+                        const data = await importData(e.target.files[0]);
+                        if (data.bills) saveBills(data.bills);
+                        if (data.todos) saveTodos(data.todos);
+                        if (data.notes) saveNotes(data.notes);
+                        if (data.birthdays) saveBirthdays(data.birthdays);
+                        showSuccessMessage('数据恢复成功！');
+                    } catch (error) {
+                        alert('恢复失败：' + error.message);
+                    }
+                };
+                input.click();
+            } else if (action === '3') {
+                if (confirm('确定要清除所有数据吗？此操作不可恢复！')) {
+                    localStorage.clear();
+                    showSuccessMessage('所有数据已清除');
+                }
+            }
+        }
+
+        // 关于功能（保留原代码）
+        function handleAbout() {
+            alert('时笺 v1.0.0\n\n一个功能丰富的日常管理应用，包含账单记录、待办事项、笔记和生日管家等功能。\n\n使用 Hbuilder 5+ App 模板开发');
+        }
+
+        // 导出数据功能（保留原代码）
+        function handleExportData() {
+            const data = {
+                bills: getBills(),
+                todos: getTodos(),
+                notes: getNotes(),
+                birthdays: getBirthdays(),
+                exportedAt: new Date().toISOString()
+            };
+            exportData(data, `export-${new Date().toISOString().split('T')[0]}.json`);
+        }
+
+        // 初始化背景
+        initBackground();
+    </script>
+</body>
+</html>

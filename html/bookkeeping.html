@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="renderer" content="webkit">
+    <meta name="wap-font-scale" content="no">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="时笺">
+    <title>时笺 - 时间账单</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-container">
+            <a href="index.html" class="logo">时笺</a>
+        </div>
+    </nav>
+
+    <div class="container" style="padding-top: 80px; padding-bottom: 100px;">
+        <div class="page-header">
+            <h1>时间账单</h1>
+            <p>记录您的日常支出</p>
+        </div>
+        
+        <div class="form-container">
+            <div class="form-header">
+                <h1>选择日期</h1>
+                <p>请选择记账日期</p>
+            </div>
+            
+            <div class="date-select-row">
+                <div class="date-select-group">
+                    <label>年</label>
+                    <input type="number" id="year" class="form-input" min="2000" max="2100">
+                </div>
+                <div class="date-select-group">
+                    <label>月</label>
+                    <input type="number" id="month" class="form-input" min="1" max="12">
+                </div>
+                <div class="date-select-group">
+                    <label>日</label>
+                    <input type="number" id="day" class="form-input" min="1" max="31">
+                </div>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goBack()">返回</button>
+                <button class="btn btn-primary" onclick="nextStep()">下一步</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="success-message" id="successMessage">保存成功！</div>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            document.getElementById('year').value = today.getFullYear();
+            document.getElementById('month').value = today.getMonth() + 1;
+            document.getElementById('day').value = today.getDate();
+        });
+
+        function goBack() {
+            navigateTo('index.html');
+        }
+
+        function nextStep() {
+            const year = document.getElementById('year').value;
+            const month = document.getElementById('month').value;
+            const day = document.getElementById('day').value;
+            
+            if (!year || !month || !day) {
+                alert('请填写完整的日期信息');
+                return;
+            }
+            
+            if (month < 1 || month > 12 || day < 1 || day > 31) {
+                alert('请输入有效的日期');
+                return;
+            }
+            
+            const date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+            navigateTo(`bookkeeping-entry.html?date=${date}`);
+        }
+    </script>
+</body>
+</html>

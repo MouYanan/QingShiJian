@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="renderer" content="webkit">
+    <meta name="wap-font-scale" content="no">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="时笺">
+    <title>时笺 - 生日管家</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-container">
+            <a href="index.html" class="logo">时笺</a>
+        </div>
+    </nav>
+
+    <div class="container" style="padding-top: 80px; padding-bottom: 100px;">
+        <div class="page-header">
+            <h1>生日管家</h1>
+            <p>记录和管理亲友生日</p>
+        </div>
+        
+        <div id="birthdaysList">
+            <div class="empty-state">
+                <i class="fas fa-birthday-cake"></i>
+                <p>暂无生日记录</p>
+                <p class="text-sm">点击右下角+按钮添加生日</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="circle-container">
+        <div id="circleOptions"></div>
+        <div id="circleBtn" class="circle-btn">
+            <i class="fa fa-plus"></i>
+        </div>
+    </div>
+
+    <footer>
+        <nav class="bottom-box">
+            <a href="index.html">
+                <p class="fa fa-book"></p>
+                <p>账单</p>
+            </a>
+            <a href="todo.html">
+                <p class="fa fa-list"></p>
+                <p>待办事项</p>
+            </a>
+            <a href="note.html">
+                <p class="fa fa-pencil"></p>
+                <p>笔记</p>
+            </a>
+            <a href="birthday.html" class="active">
+                <p class="fa fa-birthday-cake"></p>
+                <p>生日管家</p>
+            </a>
+            <a href="settings.html">
+                <p class="fa fa-gear"></p>
+                <p>设置</p>
+            </a>
+        </nav>
+    </footer>
+
+    <div class="success-message" id="successMessage">保存成功！</div>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            setActiveNavItem('birthday');
+            loadBirthdays();
+            initCircleButton([
+                { text: '添加生日', icon: 'fas fa-plus', color: 'pink', action: () => navigateTo('new-birthday.html') }
+            ]);
+        });
+
+        function loadBirthdays() {
+            const birthdays = getBirthdays();
+            const container = document.getElementById('birthdaysList');
+            
+            if (birthdays.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-birthday-cake"></i>
+                        <p>暂无生日记录</p>
+                        <p class="text-sm">点击右下角+按钮添加生日</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const sortedBirthdays = sortByDate(birthdays, 'date', false);
+            
+            let html = '';
+            sortedBirthdays.forEach((birthday, index) => {
+                const daysUntil = getDaysUntilBirthday(birthday.date);
+                html += `
+                    <div class="birthday-item">
+                        <div onclick="navigateTo('birthday-detail.html?id=${index}')">
+                            <div class="birthday-name">${birthday.name}</div>
+                            <div class="birthday-date">生日: ${formatDate(birthday.date)}</div>
+                            <div class="birthday-relation">关系: ${birthday.relation || '未设置'}</div>
+                            <div>
+                                <span class="days-until">还有${daysUntil}天</span>
+                            </div>
+                        </div>
+                        <button class="delete-btn" onclick="deleteBirthday(${index}); event.stopPropagation();">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function deleteBirthday(index) {
+            if (confirm('确定要删除这条生日记录吗？')) {
+                const birthdays = getBirthdays();
+                const sortedBirthdays = sortByDate(birthdays, 'date', false);
+                // 找到原始数组中的索引
+                const originalIndex = birthdays.findIndex(b => b.createdAt === sortedBirthdays[index].createdAt);
+                if (originalIndex !== -1) {
+                    birthdays.splice(originalIndex, 1);
+                    saveBirthdays(birthdays);
+                    showSuccessMessage();
+                    setTimeout(() => {
+                        loadBirthdays();
+                    }, 1000);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

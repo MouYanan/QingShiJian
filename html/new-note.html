@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>时笺 - 新建笔记</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-container">
+            <a href="index.html" class="logo">时笺</a>
+        </div>
+    </nav>
+
+    <div class="container" style="padding-top: 80px; padding-bottom: 100px;">
+        <div class="page-header">
+            <h1>新建笔记</h1>
+            <p>记录您的想法和重要信息</p>
+        </div>
+        
+        <div class="form-container">
+            <div class="form-header">
+                <h1>新建笔记</h1>
+                <p>记录您的想法</p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">笔记标题 *</label>
+                <input type="text" id="noteTitle" class="form-input" placeholder="例如：会议记录">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">笔记内容 *</label>
+                <textarea id="noteContent" class="form-input" rows="8" placeholder="请输入笔记内容..."></textarea>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goBack()">取消</button>
+                <button class="btn btn-primary" onclick="saveNote()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="success-message" id="successMessage">保存成功！</div>
+
+    <script src="js/app.js"></script>
+    <script>
+        function goBack() {
+            navigateTo('note.html');
+        }
+
+        function saveNote() {
+            const title = document.getElementById('noteTitle').value.trim();
+            const content = document.getElementById('noteContent').value.trim();
+            
+            if (!title) {
+                alert('请输入笔记标题');
+                return;
+            }
+            
+            if (!content) {
+                alert('请输入笔记内容');
+                return;
+            }
+            
+            const notes = getNotes();
+            notes.push({
+                title: title,
+                content: content,
+                createdAt: new Date().toISOString().split('T')[0]
+            });
+            saveNotes(notes);
+            
+            showSuccessMessage();
+            
+            setTimeout(() => {
+                navigateTo('note.html');
+            }, 1500);
+        }
+    </script>
+</body>
+</html>

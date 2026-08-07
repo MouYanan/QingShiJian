@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="renderer" content="webkit">
+    <meta name="wap-font-scale" content="no">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="时笺">
+    <title>时笺 - 权限管理</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-container">
+            <a href="index.html" class="logo">时笺</a>
+        </div>
+    </nav>
+
+    <div class="container" style="padding-top: 80px; padding-bottom: 100px;">
+        <div class="page-header">
+            <h1>权限管理</h1>
+            <p>管理应用所需的权限</p>
+        </div>
+        
+        <div class="form-container">
+            <div class="form-header">
+                <h1>权限设置</h1>
+                <p>为了应用的正常运行，需要以下权限</p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">通知权限</label>
+                <p class="text-sm" style="color: #6b7280; margin-bottom: 12px;">用于待办事项和生日管家的提醒功能</p>
+                <button class="btn btn-secondary" onclick="requestNotificationPermission()">
+                    <i class="fas fa-bell" style="margin-right: 6px;"></i>请求通知权限
+                </button>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">存储权限</label>
+                <p class="text-sm" style="color: #6b7280; margin-bottom: 12px;">用于备份和恢复数据</p>
+                <button class="btn btn-secondary" onclick="requestStoragePermission()">
+                    <i class="fas fa-save" style="margin-right: 6px;"></i>请求存储权限
+                </button>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">测试通知</label>
+                <p class="text-sm" style="color: #6b7280; margin-bottom: 12px;">测试通知功能是否正常</p>
+                <button class="btn btn-secondary" onclick="testNotification()">
+                    <i class="fas fa-paper-plane" style="margin-right: 6px;"></i>发送测试通知
+                </button>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">备份数据</label>
+                <p class="text-sm" style="color: #6b7280; margin-bottom: 12px;">将数据备份到本地存储</p>
+                <button class="btn btn-secondary" onclick="backupData()">
+                    <i class="fas fa-download" style="margin-right: 6px;"></i>备份数据
+                </button>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="goBack()">返回首页</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="success-message" id="successMessage">操作成功！</div>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查是否在5+环境中
+            if (window.plus) {
+                onPlusReady();
+            } else {
+                document.addEventListener('plusready', onPlusReady, false);
+            }
+        });
+
+        function onPlusReady() {
+            console.log('5+环境已就绪');
+        }
+
+        // 请求通知权限
+        function requestNotificationPermission() {
+            if (!window.plus) {
+                alert('请在App环境中运行此功能');
+                return;
+            }
+            
+            plus.push.requestPermission(function(result) {
+                if (result === 'granted') {
+                    showSuccessMessage('通知权限已授予');
+                } else {
+                    alert('通知权限被拒绝，将无法使用提醒功能');
+                }
+            });
+        }
+
+        // 请求存储权限
+        function requestStoragePermission() {
+            if (!window.plus) {
+                alert('请在App环境中运行此功能');
+                return;
+            }
+            
+            if (plus.os.name === 'Android') {
+                var main = plus.android.runtimeMainActivity();
+                var Permission = plus.android.importClass('android.Manifest$permission');
+                var ActivityCompat = plus.android.importClass('androidx.core.app.ActivityCompat');
+                var REQUEST_CODE = 1;
+                
+                // 检查权限
+                var hasWritePermission = ActivityCompat.checkSelfPermission(main, Permission.WRITE_EXTERNAL_STORAGE) === 0;
+                var hasReadPermission = ActivityCompat.checkSelfPermission(main, Permission.READ_EXTERNAL_STORAGE) === 0;
+                
+                if (!hasWritePermission || !hasReadPermission) {
+                    // 请求权限
+                    ActivityCompat.requestPermissions(main, [
+                        Permission.WRITE_EXTERNAL_STORAGE,
+                        Permission.READ_EXTERNAL_STORAGE
+                    ], REQUEST_CODE);
+                    showSuccessMessage('存储权限请求已发送');
+                } else {
+                    showSuccessMessage('存储权限已授予');
+                }
+            } else {
+                // iOS环境
+                showSuccessMessage('存储权限已授予');
+            }
+        }
+
+        // 发送测试通知
+        function testNotification() {
+            if (!window.plus) {
+                alert('请在App环境中运行此功能');
+                return;
+            }
+            
+            var options = {
+                title: '测试通知',
+                content: '这是一条测试通知，用于验证通知功能是否正常',
+                payload: {
+                    type: 'test'
+                }
+            };
+            
+            plus.push.createMessage(options.content, JSON.stringify(options), options);
+            showSuccessMessage('测试通知已发送');
+        }
+
+        // 备份数据
+        function backupData() {
+            if (!window.plus) {
+                alert('请在App环境中运行此功能');
+                return;
+            }
+            
+            // 假设数据存储在localStorage中
+            var bills = getBills();
+            var todos = getTodos();
+            var notes = getNotes();
+            var birthdays = getBirthdays();
+            
+            var backupData = {
+                bills: bills,
+                todos: todos,
+                notes: notes,
+                birthdays: birthdays,
+                backupDate: new Date().toISOString()
+            };
+            
+            var dataString = JSON.stringify(backupData);
+            
+            // 获取外部存储路径
+            var externalRoot = plus.io.convertLocalFileSystemURL('/storage/emulated/0/');
+            var backupDir = externalRoot + 'BillApp/Backup/';
+            
+            // 创建备份目录
+            plus.io.requestFileSystem(plus.io.PUBLIC_DOCUMENTS, function(fs) {
+                fs.root.getDirectory('BillApp/Backup', {create: true}, function(dir) {
+                    // 创建备份文件
+                    var fileName = 'backup_' + new Date().toISOString().slice(0,10) + '.json';
+                    dir.getFile(fileName, {create: true}, function(file) {
+                        // 写入数据
+                        file.createWriter(function(writer) {
+                            writer.onwriteend = function() {
+                                showSuccessMessage('数据备份成功，文件保存为: ' + fileName);
+                            };
+                            writer.onerror = function(e) {
+                                alert('数据备份失败：' + e.target.error.message);
+                            };
+                            writer.write(dataString);
+                        });
+                    });
+                });
+            });
+        }
+
+        function goBack() {
+            navigateTo('index.html');
+        }
+    </script>
+</body>
+</html>
