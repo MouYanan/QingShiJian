@@ -1,14 +1,19 @@
 package com.example.shijian2
 
 import android.Manifest
+import android.app.Activity
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.StickyNote2
 import androidx.compose.material.icons.filled.*
@@ -25,6 +30,7 @@ import com.example.shijian2.data.*
 import com.example.shijian2.ui.bill.TimeBillEntryScreen
 import com.example.shijian2.ui.bill.ProjectBillEntryScreen
 import com.example.shijian2.ui.bill.BillDetailScreen
+import com.example.shijian2.ui.bill.SummaryScreen
 import com.example.shijian2.ui.todo.TodoEntryScreen
 import com.example.shijian2.ui.todo.TodoDetailScreen
 import com.example.shijian2.ui.note.NoteEntryScreen
@@ -150,6 +156,38 @@ fun MainScreen() {
 
     // 笔记保存回调（由 NoteEntryScreen 注册，供顶部导航栏调用）
     var noteSaveAction by remember { mutableStateOf<(() -> Unit)?>(null) }
+
+    // 汇总统计状态
+    var showSummary by remember { mutableStateOf(false) }
+    var selectedBillIdsForSummary by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var summaryBills by remember { mutableStateOf<List<Bill>>(emptyList()) }
+
+    // “再按一次退出”状态
+    var backPressedTime by remember { mutableStateOf(0L) }
+
+    // 顶层返回手势处理：设置/数据管理/搜索/非账单tab/再按一次退出
+    // 各模块子页面（详情/创建/汇总/多选）由各自 Screen 内的 BackHandler 优先拦截
+    BackHandler(enabled = true) {
+        when {
+            showDataManagement -> showDataManagement = false
+            showSettings -> showSettings = false
+            showSearch -> {
+                showSearch = false
+                searchQuery = ""
+            }
+            selectedTab != 0 -> selectedTab = 0
+            else -> {
+                // 已在账单主界面：双击退出
+                val now = System.currentTimeMillis()
+                if (now - backPressedTime < 2000) {
+                    (context as? Activity)?.finish()
+                } else {
+                    backPressedTime = now
+                    Toast.makeText(context, "再按一次退出软件", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 
     if (showDataManagement) {
         DataManagementScreen(
@@ -341,7 +379,15 @@ fun MainScreen() {
                         showProjectBillEntry = showProjectBillEntry,
                         onShowProjectBillEntryChange = { show -> showProjectBillEntry = show },
                         showTimeBillEntry = showTimeBillEntry,
-                        onShowTimeBillEntryChange = { show -> showTimeBillEntry = show }
+                        onShowTimeBillEntryChange = { show -> showTimeBillEntry = show },
+                        showSummary = showSummary,
+                        onShowSummaryChange = { showSummary = it },
+                        selectedBillsForSummary = selectedBillIdsForSummary,
+                        onSelectedBillsForSummaryChange = { selectedBillIdsForSummary = it },
+                        onGenerateSummary = { bills ->
+                            summaryBills = bills
+                            showSummary = true
+                        }
                     )
                     1 -> TodoScreen(
                         onScreenTypeChange = { screenType, itemType ->
@@ -424,12 +470,18 @@ fun BillScreen(
     showProjectBillEntry: Boolean,
     onShowProjectBillEntryChange: (Boolean) -> Unit,
     showTimeBillEntry: Boolean,
-    onShowTimeBillEntryChange: (Boolean) -> Unit
+    onShowTimeBillEntryChange: (Boolean) -> Unit,
+    showSummary: Boolean = false,
+    onShowSummaryChange: (Boolean) -> Unit = {},
+    selectedBillsForSummary: Set<String> = emptySet(),
+    onSelectedBillsForSummaryChange: (Set<String>) -> Unit = {},
+    onGenerateSummary: (List<Bill>) -> Unit = {}
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var bills by remember { mutableStateOf<List<Bill>>(emptyList()) }
     var expanded by remember { mutableStateOf(false) }
+    var multiSelectMode by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         BillRepository(context).getAllBills().collect { billList ->
@@ -464,6 +516,34 @@ fun BillScreen(
         }
     }
 
+    // 账单模块子页面返回手势：创建/编辑 > 详情 > 汇总 > 多选
+    BackHandler(
+        enabled = showProjectBillEntry || showTimeBillEntry ||
+            currentSelectedBill != null || showSummary || multiSelectMode
+    ) {
+        when {
+            showProjectBillEntry -> {
+                onShowProjectBillEntryChange(false)
+                onBillToEditChange(null)
+            }
+            showTimeBillEntry -> {
+                onShowTimeBillEntryChange(false)
+                onBillToEditChange(null)
+            }
+            currentSelectedBill != null -> onSelectedBillChange(null)
+            showSummary -> {
+                // 顶栏箭头逻辑：回账单主界面，关闭汇总与多选，清空选择
+                onShowSummaryChange(false)
+                multiSelectMode = false
+                onSelectedBillsForSummaryChange(emptySet())
+            }
+            multiSelectMode -> {
+                multiSelectMode = false
+                onSelectedBillsForSummaryChange(emptySet())
+            }
+        }
+    }
+
     if (showProjectBillEntry) {
         ProjectBillEntryScreen(
             onBack = { 
@@ -492,7 +572,7 @@ fun BillScreen(
         BillDetailScreen(
             bill = currentSelectedBill,
             onBack = { onSelectedBillChange(null) },
-            onEdit = { 
+            onEdit = {
                 // 传递当前账单数据到编辑页面
                 onBillToEditChange(currentSelectedBill)
                 if (currentSelectedBill is ProjectBill) {
@@ -502,7 +582,94 @@ fun BillScreen(
                 }
             }
         )
-        } else {
+        } else if (showSummary) {
+        // 汇总页面
+        val selectedBillObjects = bills.filter { it.identifier in selectedBillsForSummary }
+        SummaryScreen(
+            selectedBills = selectedBillObjects,
+            onBack = {
+                onShowSummaryChange(false)
+                multiSelectMode = false
+                onSelectedBillsForSummaryChange(emptySet())
+            },
+            onReselect = {
+                onShowSummaryChange(false)
+                multiSelectMode = true
+            }
+        )
+    } else if (multiSelectMode) {
+        // 多选模式
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column {
+                // 多选模式顶栏
+                Surface(shadowElevation = 4.dp) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = {
+                            multiSelectMode = false
+                            onSelectedBillsForSummaryChange(emptySet())
+                        }) {
+                            Icon(Icons.Default.Close, contentDescription = "退出多选")
+                        }
+                        Text(
+                            text = "已选 ${selectedBillsForSummary.size} 项",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (selectedBillsForSummary.isNotEmpty()) {
+                            TextButton(onClick = {
+                                onSelectedBillsForSummaryChange(emptySet())
+                            }) {
+                                Text("清空")
+                            }
+                        }
+                    }
+                }
+                LazyColumn(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(bills) { bill ->
+                        BillCard(
+                            bill = bill,
+                            onClick = {
+                                val current = selectedBillsForSummary
+                                if (bill.identifier in current) {
+                                    onSelectedBillsForSummaryChange(current - bill.identifier)
+                                } else {
+                                    onSelectedBillsForSummaryChange(current + bill.identifier)
+                                }
+                            },
+                            isSelected = bill.identifier in selectedBillsForSummary,
+                            showCheckbox = true
+                        )
+                    }
+                }
+            }
+            // 左下角生成汇总按钮
+            if (selectedBillsForSummary.isNotEmpty()) {
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        val selected = bills.filter { it.identifier in selectedBillsForSummary }
+                        onGenerateSummary(selected)
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp),
+                    containerColor = MaterialTheme.colorScheme.primary
+                ) {
+                    Icon(Icons.Default.Analytics, contentDescription = null)
+                    Text("生成汇总（${selectedBillsForSummary.size}）")
+                }
+            }
+        }
+    } else {
         ListScreenWithExpandedFAB(
             items = bills,
             itemContent = { bill ->
@@ -534,6 +701,15 @@ fun BillScreen(
                     ) {
                         Icon(Icons.Default.Schedule, contentDescription = null)
                         Text("时间账单")
+                    }
+                    ExtendedFloatingActionButton(
+                        onClick = {
+                            expanded = false
+                            multiSelectMode = true
+                        }
+                    ) {
+                        Icon(Icons.Default.Analytics, contentDescription = null)
+                        Text("汇总统计")
                     }
                 }
             }
@@ -587,6 +763,17 @@ fun TodoScreen(
             else -> {
                 onScreenTypeChange(ScreenType.MAIN, null)
             }
+        }
+    }
+
+    // 待办模块子页面返回手势：创建/编辑 > 详情
+    BackHandler(enabled = showTodoEntry || currentSelectedTodo != null) {
+        when {
+            showTodoEntry -> {
+                onShowTodoEntryChange(false)
+                onTodoToEditChange(null)
+            }
+            currentSelectedTodo != null -> onSelectedTodoChange(null)
         }
     }
 
@@ -673,6 +860,17 @@ fun NoteScreen(
             else -> {
                 onScreenTypeChange(ScreenType.MAIN, null)
             }
+        }
+    }
+
+    // 笔记模块子页面返回手势：创建/编辑 > 详情
+    BackHandler(enabled = showNoteEntry || currentSelectedNote != null) {
+        when {
+            showNoteEntry -> {
+                onShowNoteEntryChange(false)
+                onNoteToEditChange(null)
+            }
+            currentSelectedNote != null -> onSelectedNoteChange(null)
         }
     }
 
@@ -763,6 +961,17 @@ fun BirthdayScreen(
         }
     }
 
+    // 生日模块子页面返回手势：创建/编辑 > 详情
+    BackHandler(enabled = showBirthdayEntry || currentSelectedBirthday != null) {
+        when {
+            showBirthdayEntry -> {
+                onShowBirthdayEntryChange(false)
+                onBirthdayToEditChange(null)
+            }
+            currentSelectedBirthday != null -> onSelectedBirthdayChange(null)
+        }
+    }
+
     if (showBirthdayEntry) {
         BirthdayEntryScreen(
             onBack = { 
@@ -819,41 +1028,54 @@ private fun getBirthdaySortKey(birthday: Birthday): String {
 
 // 简化的Card组件
 @Composable
-fun BillCard(bill: Bill, onClick: () -> Unit) {
+fun BillCard(bill: Bill, onClick: () -> Unit, isSelected: Boolean = false, showCheckbox: Boolean = false) {
     val title = when (bill) {
         is ProjectBill -> bill.name
         is TimeBill -> "时间账单 - ${bill.date}"
     }
-    
+
     val description = when (bill) {
         is ProjectBill -> "总金额: ¥${String.format("%.2f", bill.total)}"
         is TimeBill -> "总金额: ¥${String.format("%.2f", bill.total)}"
     }
-    
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = if (showCheckbox && isSelected)
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+        else CardDefaults.cardColors()
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
+            if (showCheckbox) {
+                Checkbox(
+                    checked = isSelected,
+                    onCheckedChange = { onClick() },
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
     }
 }
