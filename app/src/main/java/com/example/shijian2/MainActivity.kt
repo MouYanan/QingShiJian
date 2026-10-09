@@ -2,14 +2,18 @@ package com.example.shijian2
 
 import android.Manifest
 import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -57,13 +61,32 @@ import com.example.shijian2.util.BirthdayDisplayUtil
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+
+    /**
+     * 用 ActivityResult API 请求通知权限（替代旧的 requestPermissions）。
+     * 关键差别：被拒时会收到回调，从而能给出明确提示并引导去系统设置，
+     * 而不是像旧代码那样静默失败、用户毫无感知。
+     */
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (!granted) {
+            android.app.AlertDialog.Builder(this)
+                .setTitle("通知权限未开启")
+                .setMessage("待办到期提醒与生日提醒将无法送达。可在系统设置中手动开启通知权限。")
+                .setPositiveButton("前往设置") { _, _ -> openNotificationSettings() }
+                .setNegativeButton("稍后", null)
+                .show()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        
+
         // 初始化通知服务
         initializeNotificationService()
-        
+
         setContent {
             val settingsRepo = remember { SettingsRepository(this@MainActivity) }
             var themeMode by remember { mutableStateOf("light") }
@@ -75,22 +98,44 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-    
+
     private fun initializeNotificationService() {
-        // 启动通知检查服务
-        NotificationScheduler.scheduleDailyNotificationCheck(this)
-        
-        // 如果是Android 13+，请求通知权限
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val notificationPermission = Manifest.permission.POST_NOTIFICATIONS
-            
-            if (ContextCompat.checkSelfPermission(this, notificationPermission) 
-                != PackageManager.PERMISSION_GRANTED) {
-                
-                // 在后台请求权限，不阻塞UI
-                requestPermissions(arrayOf(notificationPermission), 1001)
-            }
+        // 确保周期检查任务已排入队列（幂等，不会重复创建或重置计时）
+        NotificationScheduler.schedulePeriodicNotificationCheck(this)
+
+        // Android 13+ 需要运行时通知权限
+        requestNotificationPermissionIfNeeded()
+    }
+
+    private fun requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+
+        val permission = Manifest.permission.POST_NOTIFICATIONS
+        if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED) return
+
+        if (shouldShowRequestPermissionRationale(permission)) {
+            // 之前拒绝过：先说明用途再请求，避免用户不知情地点「拒绝」后彻底收不到提醒
+            android.app.AlertDialog.Builder(this)
+                .setTitle("开启通知提醒")
+                .setMessage("「轻时笺」需要通知权限，才能在待办到期和生日当天提醒你。")
+                .setPositiveButton("去开启") { _, _ -> notificationPermissionLauncher.launch(permission) }
+                .setNegativeButton("暂不", null)
+                .show()
+        } else {
+            // 首次请求；若用户已选「不再询问」，launch 会立即回调 denied 并引导去系统设置
+            notificationPermissionLauncher.launch(permission)
         }
+    }
+
+    private fun openNotificationSettings() {
+        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                .putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+        } else {
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                .setData(Uri.fromParts("package", packageName, null))
+        }
+        runCatching { startActivity(intent) }
     }
 }
 

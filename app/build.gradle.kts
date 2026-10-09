@@ -12,8 +12,8 @@ android {
         applicationId = "com.example.shijian2"
         minSdk = 26
         targetSdk = 36
-        versionCode = 5
-        versionName = "1.0.5"
+        versionCode = 6
+        versionName = "1.0.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -34,6 +34,8 @@ android {
     }
     buildFeatures {
         compose = true
+        // 开启 BuildConfig，供界面读取 BuildConfig.VERSION_NAME，避免版本号硬编码漂移
+        buildConfig = true
     }
 }
 

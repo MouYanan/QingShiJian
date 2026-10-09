@@ -1,17 +1,13 @@
 package com.example.shijian2.service
 
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.os.Build
 import android.util.Log
 import androidx.work.*
 import com.example.shijian2.data.BirthdayRepository
 import com.example.shijian2.data.TodoRepository
-import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -26,8 +22,11 @@ class NotificationWorker(
             checkNotifications()
             Result.success()
         } catch (e: Exception) {
-            Log.e("NotificationWorker", "Error checking notifications", e)
-            Result.failure()
+            // 关键：周期任务绝不能返回 failure。
+            // 对 PeriodicWorkRequest 而言 failure 是终止态，会让整条提醒链路被永久停掉；
+            // 这里改为 retry，交给 WorkManager 按退避策略重试。
+            Log.e("NotificationWorker", "检查通知时出错，将在下个周期重试", e)
+            Result.retry()
         }
     }
 
@@ -95,68 +94,81 @@ class NotificationWorker(
     }
 }
 
+/**
+ * 供应用内显式触发一次即时检查使用（不再对外导出，避免被第三方 App 直接调起）。
+ */
 class NotificationReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        // 启动通知检查工作
         NotificationScheduler.scheduleImmediateNotificationCheck(context)
     }
 }
 
 object NotificationScheduler {
-    
-    fun scheduleDailyNotificationCheck(context: Context) {
-        // 取消之前的任务
-        cancelAllNotifications(context)
-        
+
+    private const val PERIODIC_WORK_NAME = "daily_notification_check"
+
+    /**
+     * 确保周期检查任务已排入队列（幂等）。
+     *
+     * 使用 ExistingPeriodicWorkPolicy.KEEP：重复调用不会取消并重建任务，
+     * 因此不会像 REPLACE 那样在每次打开 App 时把 15 分钟计时相位反复清零，
+     * 也不会因为「刚打开就重排」而迟迟等不到第一次检查。
+     * 需要真正重启任务时（例如用户重新打开通知开关），先调用 cancelAllNotificationChecks()。
+     */
+    fun schedulePeriodicNotificationCheck(context: Context) {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
             .setRequiresCharging(false)
             .setRequiresBatteryNotLow(false)
             .build()
-        
-        // 每天检查一次（用于生日提醒，最小间隔15分钟）
-        val dailyCheck = PeriodicWorkRequestBuilder<NotificationWorker>(15, TimeUnit.MINUTES)
+
+        // 15 分钟是 WorkManager 周期任务允许的最小间隔
+        val periodicCheck = PeriodicWorkRequestBuilder<NotificationWorker>(15, TimeUnit.MINUTES)
             .setConstraints(constraints)
             .setInitialDelay(1, TimeUnit.MINUTES)
             .build()
-        
+
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-            "daily_notification_check",
-            ExistingPeriodicWorkPolicy.REPLACE,
-            dailyCheck
+            PERIODIC_WORK_NAME,
+            ExistingPeriodicWorkPolicy.KEEP,
+            periodicCheck
         )
-        
-        Log.d("NotificationScheduler", "Notification check scheduled")
+
+        Log.d("NotificationScheduler", "Periodic notification check ensured (KEEP)")
     }
-    
+
     fun scheduleImmediateNotificationCheck(context: Context) {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
             .setRequiresCharging(false)
             .build()
-        
+
         val immediateCheck = OneTimeWorkRequestBuilder<NotificationWorker>()
             .setConstraints(constraints)
             .setInitialDelay(5, TimeUnit.SECONDS)
             .build()
-        
+
         WorkManager.getInstance(context).enqueue(immediateCheck)
     }
-    
-    fun cancelAllNotifications(context: Context) {
-        WorkManager.getInstance(context).cancelUniqueWork("daily_notification_check")
-        WorkManager.getInstance(context).cancelUniqueWork("frequent_notification_check")
-        Log.d("NotificationScheduler", "All notification checks cancelled")
+
+    fun cancelAllNotificationChecks(context: Context) {
+        WorkManager.getInstance(context).cancelUniqueWork(PERIODIC_WORK_NAME)
+        Log.d("NotificationScheduler", "Periodic notification check cancelled")
     }
 }
 
+/**
+ * 开机广播接收器。
+ *
+ * 只处理 BOOT_COMPLETED / QUICKBOOT_POWERON：应用数据存放在凭据保护存储中，
+ * 在用户解锁前（LOCKED_BOOT_COMPLETED 阶段）无法读取，故不再声明该 action。
+ */
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED ||
-            intent.action == Intent.ACTION_LOCKED_BOOT_COMPLETED ||
             intent.action == "android.intent.action.QUICKBOOT_POWERON"
         ) {
-            // 设备重启后通过WorkManager异步检查通知开关并重新调度
+            // 设备重启后通过 WorkManager 异步检查通知开关并重新调度
             val workRequest = OneTimeWorkRequestBuilder<BootCheckWorker>()
                 .setInitialDelay(5, TimeUnit.SECONDS)
                 .build()
@@ -173,7 +185,7 @@ class BootCheckWorker(
         val settingsRepo = com.example.shijian2.data.SettingsRepository(applicationContext)
         val enabled = settingsRepo.getNotifications()
         if (enabled) {
-            NotificationScheduler.scheduleDailyNotificationCheck(applicationContext)
+            NotificationScheduler.schedulePeriodicNotificationCheck(applicationContext)
         }
         return Result.success()
     }

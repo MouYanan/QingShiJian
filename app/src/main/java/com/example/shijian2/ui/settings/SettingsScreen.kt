@@ -1,5 +1,6 @@
 package com.example.shijian2.ui.settings
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -10,6 +11,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,9 +20,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.example.shijian2.BuildConfig
 import com.example.shijian2.data.SettingsRepository
+import com.example.shijian2.data.Todo
 import com.example.shijian2.service.NotificationScheduler
+import com.example.shijian2.service.NotificationService
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,9 +67,9 @@ fun SettingsScreen(
             repository.setNotifications(notifications)
             // 同步控制 WorkManager 通知任务
             if (notifications) {
-                NotificationScheduler.scheduleDailyNotificationCheck(context)
+                NotificationScheduler.schedulePeriodicNotificationCheck(context)
             } else {
-                NotificationScheduler.cancelAllNotifications(context)
+                NotificationScheduler.cancelAllNotificationChecks(context)
             }
         } else {
             notificationsInitialized = true
@@ -208,6 +216,33 @@ fun SettingsScreen(
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
             SettingsItem(
+                icon = Icons.Default.NotificationsActive,
+                title = "发送测试通知",
+                subtitle = "验证通知权限与提醒渠道是否正常",
+                onClick = {
+                    val now = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date())
+                    // 需要通知权限或渠道被关闭时会返回 false，避免「点了没反应却不知道原因」
+                    val sent = NotificationService(context).sendTodoNotification(
+                        Todo(
+                            id = "test",
+                            title = "测试通知",
+                            startDate = now,
+                            dueDate = now,
+                            priority = "medium",
+                            createdAt = now
+                        )
+                    )
+                    Toast.makeText(
+                        context,
+                        if (sent) "测试通知已发送" else "发送失败：请检查通知权限或系统通知渠道是否被关闭",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            )
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+            SettingsItem(
                 icon = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 title = "数据管理",
                 subtitle = "备份和导入数据",
@@ -231,7 +266,7 @@ fun SettingsScreen(
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text("轻时笺", style = MaterialTheme.typography.titleLarge)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("版本 1.0.3", style = MaterialTheme.typography.bodyMedium)
+                    Text("版本 ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.bodyMedium)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         "一个功能强大的时间管理和账单管理应用",
